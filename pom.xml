@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ~ ~ Copyright 2016-2017 Red Hat, Inc, and individual contributors. ~ ~ Licensed under the Apache License, Version 2.0 
+  (the "License"); ~ you may not use this file except in compliance with the License. ~ You may obtain a copy of the License 
+  at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 ~ ~ Unless required by applicable law or agreed to in writing, software 
+  ~ distributed under the License is distributed on an "AS IS" BASIS, ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
+  express or implied. ~ See the License for the specific language governing permissions and ~ limitations under the License. 
+  ~ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.openshift</groupId>
+    <artifactId>booster-parent</artifactId>
+    <version>10</version>
+  </parent>
+
+  <groupId>io.openshift.booster</groupId>
+  <artifactId>simpleapp</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+
+  <name>WildFly Swarm Booster - REST API Level 0 Mission</name>
+
+  <properties>
+    <version.wildfly.swarm>2017.12.0-SNAPSHOT</version.wildfly.swarm>
+    <version.resteasy>3.0.19.Final</version.resteasy>
+    <!-- Licenses - plugins -->
+    <version.wildfly.swarm.fraction.plugin>61</version.wildfly.swarm.fraction.plugin>
+    <version.xml-maven-plugin>1.0.1</version.xml-maven-plugin>
+    <version.license-maven-plugin>1.13</version.license-maven-plugin>
+    <version.wildfly-licenses-plugin>1.0.1</version.wildfly-licenses-plugin>
+    <!-- Licenses - JBoss repo URL used in custom-settings -->
+    <jboss.repo.url>https://repository.jboss.org/nexus/content/groups/public</jboss.repo.url>
+    <licenses.pom.file>pom.xml</licenses.pom.file>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.wildfly.swarm</groupId>
+        <artifactId>bom</artifactId>
+        <version>${version.wildfly.swarm}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.wildfly.swarm</groupId>
+      <artifactId>jaxrs</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.wildfly.swarm</groupId>
+      <artifactId>monitor</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.wildfly.swarm</groupId>
+      <artifactId>undertow</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.wildfly.swarm</groupId>
+      <artifactId>swagger</artifactId>
+      <version>2017.12.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>1.5.16</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-core</artifactId>
+      <scope>provided</scope>
+      <version>1.5.16</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-models</artifactId>
+      <scope>provided</scope>
+      <version>1.5.16</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.wildfly.swarm</groupId>
+      <artifactId>teiid</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.wildfly.swarm</groupId>
+      <artifactId>teiid-jdbc</artifactId>
+      <version>2017.12.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>    
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.wildfly.swarm</groupId>
+        <artifactId>wildfly-swarm-plugin</artifactId>
+        <version>${version.wildfly.swarm}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>package</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>openshift</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>fabric8-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>resource</goal>
+                  <goal>build</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <generator>
+                <includes>
+                  <include>wildfly-swarm</include>
+                </includes>
+                <excludes>
+                  <exclude>webapp</exclude>
+                </excludes>
+              </generator>
+              <enricher>
+                <config>
+                  <wildfly-swarm-health-check>
+                    <path>/</path>
+                  </wildfly-swarm-health-check>
+                </config>
+              </enricher>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      <activation />
+    </profile>
+  </profiles>
+</project>
